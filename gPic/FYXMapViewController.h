@@ -9,11 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <GoogleMaps/GoogleMaps.h>
 
-@interface FYXMapViewController : UIViewController <GMSMapViewDelegate>
+@interface FYXMapViewController : UIViewController <GMSMapViewDelegate, NSURLSessionDataDelegate>
 
+@property (nonatomic, strong) NSString *instagramToken;
+
+/*
 @property (nonatomic, strong) GMSMapView *mapView;
-@property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSMutableArray *photos;
 @property (nonatomic, strong) NSString *instagramToken;
+*/
 
 @end

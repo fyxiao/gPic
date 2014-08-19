@@ -11,6 +11,14 @@
 #import "FYXPhotoViewController.h"
 #import <GoogleMaps/GoogleMaps.h>
 
+@interface FYXMapViewController ()
+
+@property (nonatomic, strong) GMSMapView *mapView;
+@property (nonatomic, strong) NSMutableArray *photos;
+@property (nonatomic, strong) NSURLSession *session;
+
+@end
+
 @implementation FYXMapViewController
 
 - (void)viewDidLoad {
@@ -32,11 +40,19 @@
     marker.snippet = @"NJ";
     marker.map = _mapView;
     marker.tappable = YES;
+}
+
+- (instancetype)init
+{
+    self = [super init];
     
     // Set up session.
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     _session = [NSURLSession sessionWithConfiguration:config delegate:nil delegateQueue:nil];
+    
+    return self;
 }
+
 
 // Whenever the user long presses a location on the map, we'll get photos that were geotagged near that location.
 - (void)mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate
@@ -47,29 +63,9 @@
     CLLocationDegrees latitude = coordinate.latitude;
     CLLocationDegrees longitude = coordinate.longitude;
     NSLog(@"Recognized a tap at %f latitude and %f longitude", latitude, longitude);
-    
     [self fetchPhotos:coordinate];
-    for (int i = 0; i < [_photos count]; i++) {
-        NSDictionary *photoDict = _photos[i];
-        NSDictionary *photoLocation = photoDict[@"location"];
-        CLLocationDegrees photoLatitude = [photoLocation[@"latitude"] doubleValue];
-        CLLocationDegrees photoLongitude = [photoLocation[@"longitude"] doubleValue];
-        //NSLog(@"Photo coordinates are (%f, %f)", photoLatitude, photoLongitude);
-        GMSMarker *marker = [[GMSMarker alloc] init];
-        marker.position = CLLocationCoordinate2DMake(photoLatitude, photoLongitude);
-        marker.map = _mapView;
-        marker.snippet = photoDict[@"link"];
-        NSDictionary *photos = photoDict[@"images"];
-        // different photo options
-        NSDictionary *targetImageThumb = photos[@"thumbnail"];
-        //NSDictionary *targetImage = photos[@"low_resolution"];
-        NSDictionary *targetImageStd = photos[@"standard_resolution"];
-        marker.title = targetImageThumb[@"url"];
-        marker.snippet = targetImageStd[@"url"];
-        //NSLog(@"%@", [NSString stringWithFormat:@"Got the standard resolution photo link at %@", marker.title]);
-        marker.tappable = YES;
-        
-    }
+    
+    NSLog(@"Made it past fetchPhotos");
 }
 
 // The method that actually fetches the photos.
@@ -84,9 +80,32 @@
     NSURLRequest *req = [NSURLRequest requestWithURL:requestURL];
     
     NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSLog(@"Sending a query to %@", requestString);
-        NSDictionary *responseData = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        _photos = responseData[@"data"];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            NSLog(@"Sending a query to %@", requestString);
+            NSDictionary *responseData = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            _photos = responseData[@"data"];
+            
+            for (int i = 0; i < [_photos count]; i++) {
+                NSDictionary *photoDict = _photos[i];
+                NSDictionary *photoLocation = photoDict[@"location"];
+                CLLocationDegrees photoLatitude = [photoLocation[@"latitude"] doubleValue];
+                CLLocationDegrees photoLongitude = [photoLocation[@"longitude"] doubleValue];
+                //NSLog(@"Photo coordinates are (%f, %f)", photoLatitude, photoLongitude);
+                GMSMarker *marker = [[GMSMarker alloc] init];
+                marker.position = CLLocationCoordinate2DMake(photoLatitude, photoLongitude);
+                marker.map = _mapView;
+                marker.snippet = photoDict[@"link"];
+                NSDictionary *photos = photoDict[@"images"];
+                // different photo options
+                NSDictionary *targetImageThumb = photos[@"thumbnail"];
+                //NSDictionary *targetImage = photos[@"low_resolution"];
+                NSDictionary *targetImageStd = photos[@"standard_resolution"];
+                marker.title = targetImageThumb[@"url"];
+                marker.snippet = targetImageStd[@"url"];
+                //NSLog(@"%@", [NSString stringWithFormat:@"Got the standard resolution photo link at %@", marker.title]);
+                marker.tappable = YES;
+            }
+        }];
     }];
     [dataTask resume];
 }
@@ -112,11 +131,6 @@
     pvc.photoPath = marker.snippet;
     [self presentViewController:pvc animated:YES completion:NULL];
     
-}
-
-- (void)tap:(UIGestureRecognizer *)gr
-{
-    NSLog(@"Recognized a tap in a FYXPhotoView!");
 }
 
 @end
