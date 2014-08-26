@@ -7,9 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FYXAuthViewController.h"
+#import "FYXMapViewController.h"
 
 @interface FYXAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) FYXAuthViewController *avc;
+@property (strong, nonatomic) FYXMapViewController *mvc;
 
 @end

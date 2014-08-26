@@ -7,6 +7,7 @@
 //
 
 #import "Constants.h"
+#import "FYXAppDelegate.h"
 #import "FYXAuthViewController.h"
 
 @interface FYXAuthViewController () <UIWebViewDelegate>
@@ -48,8 +49,9 @@
     if (tokenLoc.location != NSNotFound) {
         NSString *instagramToken = [urlString substringFromIndex:(tokenLoc.location + tokenLoc.length + 1)];
         NSLog(@"%@", instagramToken);
-        self.mvc.instagramToken = instagramToken;
-        [self presentViewController:self.mvc animated:YES completion:^{ }];
+        FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+        appDelegate.mvc.instagramToken = instagramToken;
+        [self presentViewController:appDelegate.mvc animated:YES completion:^{ }];
     }
 	return YES;
 }

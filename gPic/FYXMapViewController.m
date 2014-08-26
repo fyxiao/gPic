@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Frank Xiao. All rights reserved.
 //
 
+#import "FYXAppDelegate.h"
+#import "FYXAuthViewController.h"
 #import "FYXMapViewController.h"
 #import "FYXPhotoView.h"
 #import "FYXPhotoViewController.h"
@@ -16,6 +18,7 @@
 @property (nonatomic, strong) GMSMapView *mapView;
 @property (nonatomic, strong) NSMutableArray *photos;
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic) CGRect menuRect;
 
 @end
 
@@ -28,6 +31,13 @@
     _mapView = [GMSMapView mapWithFrame:CGRectZero camera:camera];
     _mapView.myLocationEnabled = YES;
     _mapView.delegate = self;
+    
+    // Create rectangle on the bottom of the map view to detect user taps that will bring up the menu.
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    _menuRect = appDelegate.window.bounds;
+    _menuRect.origin.y = _menuRect.size.height * 0.85;
+    _menuRect.size.height *= 0.15;
+    
     self.view = _mapView;
     
     // Initialize photos.
@@ -41,6 +51,37 @@
     marker.map = _mapView;
     marker.tappable = YES;
 }
+
+- (void)mapView:(GMSMapView *)mapView
+didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
+    CGPoint tappedPoint = [mapView.projection pointForCoordinate:coordinate];
+    if (CGRectContainsPoint(_menuRect, tappedPoint)) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [button addTarget:self action:@selector(logoutFromApp) forControlEvents:UIControlEventTouchUpInside];
+        [button setTitle:@"Logout of gPic" forState:UIControlStateNormal];
+        button.frame = _menuRect;
+        [self.view addSubview:button];
+    }
+}
+
+- (void)logoutFromApp
+{
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    appDelegate.mvc.instagramToken = @"";
+    
+    NSHTTPCookie *cookie;
+    NSHTTPCookieStorage *storage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    for (cookie in [storage cookies]) {
+        [storage deleteCookie:cookie];
+    }
+    
+    appDelegate.avc = [[FYXAuthViewController alloc] init];
+    
+    [self dismissViewControllerAnimated:YES completion:^(void){}];
+    
+    appDelegate.window.rootViewController = appDelegate.avc;
+}
+
 
 - (instancetype)init
 {
@@ -60,12 +101,7 @@
     // Clear the previous photos retrieved.
     [_mapView clear];
     
-    CLLocationDegrees latitude = coordinate.latitude;
-    CLLocationDegrees longitude = coordinate.longitude;
-    NSLog(@"Recognized a tap at %f latitude and %f longitude", latitude, longitude);
     [self fetchPhotos:coordinate];
-    
-    NSLog(@"Made it past fetchPhotos");
 }
 
 // The method that actually fetches the photos.
@@ -90,7 +126,6 @@
                 NSDictionary *photoLocation = photoDict[@"location"];
                 CLLocationDegrees photoLatitude = [photoLocation[@"latitude"] doubleValue];
                 CLLocationDegrees photoLongitude = [photoLocation[@"longitude"] doubleValue];
-                //NSLog(@"Photo coordinates are (%f, %f)", photoLatitude, photoLongitude);
                 GMSMarker *marker = [[GMSMarker alloc] init];
                 marker.position = CLLocationCoordinate2DMake(photoLatitude, photoLongitude);
                 marker.map = _mapView;
@@ -102,7 +137,6 @@
                 NSDictionary *targetImageStd = photos[@"standard_resolution"];
                 marker.title = targetImageThumb[@"url"];
                 marker.snippet = targetImageStd[@"url"];
-                //NSLog(@"%@", [NSString stringWithFormat:@"Got the standard resolution photo link at %@", marker.title]);
                 marker.tappable = YES;
             }
         }];

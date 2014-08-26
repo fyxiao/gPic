@@ -24,12 +24,11 @@
     // Authorize this app to use Google Maps.
     [GMSServices provideAPIKey:GMS_API_KEY];
     
-    FYXMapViewController *mvc = [[FYXMapViewController alloc] init];
+    _mvc = [[FYXMapViewController alloc] init];
     
-    FYXAuthViewController *avc = [[FYXAuthViewController alloc] init];
-    avc.mvc = mvc;
+    _avc = [[FYXAuthViewController alloc] init];
     
-    self.window.rootViewController = avc;
+    self.window.rootViewController = _avc;
     return YES;
 }
 

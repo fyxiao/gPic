@@ -28,7 +28,7 @@
 {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        NSLog(@"In the initWithPhotoPath for FYXPhotoViewController");
+        //NSLog(@"In the initWithPhotoPath for FYXPhotoViewController");
         // Custom initialization
         NSURL *requestURL = [NSURL URLWithString:path];
         UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
@@ -46,7 +46,7 @@
 
 - (void)tap:(UIGestureRecognizer *)gr
 {
-    NSLog(@"Recognized a tap in a FYXPhotoViewController!");
+    //NSLog(@"Recognized a tap in a FYXPhotoViewController!");
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

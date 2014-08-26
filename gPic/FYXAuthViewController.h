@@ -14,6 +14,5 @@
 
 @property (nonatomic, strong) FYXAuthView *authView;
 @property (nonatomic, copy) NSString *instagramToken;
-@property (nonatomic, strong) FYXMapViewController *mvc;
 
 @end
