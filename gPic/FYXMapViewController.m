@@ -9,6 +9,7 @@
 #import "FYXAppDelegate.h"
 #import "FYXAuthViewController.h"
 #import "FYXMapViewController.h"
+#import "FYXMarkerInformation.h"
 #import "FYXPhotoView.h"
 #import "FYXPhotoViewController.h"
 #import <GoogleMaps/GoogleMaps.h>
@@ -19,10 +20,21 @@
 @property (nonatomic, strong) NSMutableArray *photos;
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic) CGRect menuRect;
+@property (nonatomic) UIButton *button;
 
 @end
 
 @implementation FYXMapViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    _button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [_button addTarget:self action:@selector(logoutFromApp) forControlEvents:UIControlEventTouchUpInside];
+    [_button setTitle:@"Logout of gPic" forState:UIControlStateNormal];
+    [_button setBackgroundColor:[UIColor whiteColor]];
+    
+    return self;
+}
 
 - (void)viewDidLoad {
     GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:40.3487
@@ -35,8 +47,8 @@
     // Create rectangle on the bottom of the map view to detect user taps that will bring up the menu.
     FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
     _menuRect = appDelegate.window.bounds;
-    _menuRect.origin.y = _menuRect.size.height * 0.85;
-    _menuRect.size.height *= 0.15;
+    _menuRect.origin.y = _menuRect.size.height * 0.9;
+    _menuRect.size.height *= 0.1;
     
     self.view = _mapView;
     
@@ -50,22 +62,25 @@
     marker.snippet = @"NJ";
     marker.map = _mapView;
     marker.tappable = YES;
+    
 }
 
 - (void)mapView:(GMSMapView *)mapView
 didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     CGPoint tappedPoint = [mapView.projection pointForCoordinate:coordinate];
     if (CGRectContainsPoint(_menuRect, tappedPoint)) {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [button addTarget:self action:@selector(logoutFromApp) forControlEvents:UIControlEventTouchUpInside];
-        [button setTitle:@"Logout of gPic" forState:UIControlStateNormal];
-        button.frame = _menuRect;
-        [self.view addSubview:button];
+        _button.frame = _menuRect;
+        [self.view addSubview:_button];
+    } else { // hide
+        [_button removeFromSuperview];
     }
 }
 
 - (void)logoutFromApp
 {
+    // clear the button
+    [_button removeFromSuperview];
+    
     FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
     appDelegate.mvc.instagramToken = @"";
     
@@ -117,7 +132,7 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     
     NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            NSLog(@"Sending a query to %@", requestString);
+            //NSLog(@"Sending a query to %@", requestString);
             NSDictionary *responseData = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             _photos = responseData[@"data"];
             
@@ -129,15 +144,18 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
                 GMSMarker *marker = [[GMSMarker alloc] init];
                 marker.position = CLLocationCoordinate2DMake(photoLatitude, photoLongitude);
                 marker.map = _mapView;
-                marker.snippet = photoDict[@"link"];
+
                 NSDictionary *photos = photoDict[@"images"];
                 // different photo options
                 NSDictionary *targetImageThumb = photos[@"thumbnail"];
-                //NSDictionary *targetImage = photos[@"low_resolution"];
                 NSDictionary *targetImageStd = photos[@"standard_resolution"];
-                marker.title = targetImageThumb[@"url"];
-                marker.snippet = targetImageStd[@"url"];
+                
+                // get the caption
+                NSDictionary *caption = photoDict[@"caption"];
+                NSString *captionToDisplay = ([caption isKindOfClass:[NSNull class]]) ? @"No caption found." : caption[@"text"];
+                
                 marker.tappable = YES;
+                marker.userData = [[FYXMarkerInformation alloc] initWithLink:photoDict[@"link"] thumbnailURL:targetImageThumb[@"url"] standardURL:targetImageStd[@"url"] caption:captionToDisplay];
             }
         }];
     }];
@@ -145,25 +163,22 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
 }
 
 - (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
-    NSURL *requestURL = [NSURL URLWithString:marker.title];
+    FYXMarkerInformation *markerInfo = (FYXMarkerInformation *)marker.userData;
+    NSURL *requestURL = [NSURL URLWithString:markerInfo.thumbnailURL];
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
     UIImageView *view = [[UIImageView alloc] initWithImage:image];
-    NSLog(@"%@", [NSString stringWithFormat:@"Finished downloading photo from %@", requestURL]);
-    //NSLog(@"%@", [NSString stringWithFormat:@"Link is %@", marker.snippet]);
+    //NSLog(@"%@", [NSString stringWithFormat:@"Finished downloading photo from %@", requestURL]);
     return view;
 }
 
 // Return a view of the full image when the user taps the small thumbnail view.
 - (void)mapView:(GMSMapView *)mapView didTapInfoWindowOfMarker:(GMSMarker *)marker
 {
-    NSLog(@"User tapped a thumbnail view!");
-    //NSURL *requestURL = [NSURL URLWithString:marker.snippet];
-    //UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
-    //UIImageView *view = [[UIImageView alloc] initWithImage:image];
-    
-    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:marker.snippet];
-    pvc.photoPath = marker.snippet;
-    [self presentViewController:pvc animated:YES completion:NULL];
+    //NSLog(@"User tapped a thumbnail view!");
+    FYXMarkerInformation *markerInfo = (FYXMarkerInformation *)marker.userData;
+    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL];
+    pvc.photoPath = markerInfo.standardURL;
+    [self presentViewController:pvc animated:NO completion:NULL];
     
 }
 

@@ -23,8 +23,10 @@
 {
     NSLog(@"Initialized a FYXPhotoView!");
     self = [super initWithImage:image];
+    self.contentMode = UIViewContentModeScaleAspectFit;
     
     self.userInteractionEnabled = YES;
+    self.backgroundColor = [UIColor blackColor];
     
     return self;
 }
