@@ -13,6 +13,8 @@
 
 @property (nonatomic, strong) NSString *instagramToken;
 
+- (void)setDefaultMapView;
+
 /*
 @property (nonatomic, strong) GMSMapView *mapView;
 @property (nonatomic, strong) NSMutableArray *photos;

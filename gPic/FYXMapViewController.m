@@ -37,6 +37,11 @@
 }
 
 - (void)viewDidLoad {
+    [self setDefaultMapView];
+}
+
+- (void)setDefaultMapView
+{
     GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:40.3487
                                                             longitude:-74.6591
                                                                  zoom:17];
@@ -62,7 +67,6 @@
     marker.snippet = @"NJ";
     marker.map = _mapView;
     marker.tappable = YES;
-    
 }
 
 - (void)mapView:(GMSMapView *)mapView
@@ -90,7 +94,7 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
         [storage deleteCookie:cookie];
     }
     
-    appDelegate.avc = [[FYXAuthViewController alloc] init];
+    appDelegate.avc = [appDelegate.avc init];
     
     [self dismissViewControllerAnimated:YES completion:^(void){}];
     
@@ -176,7 +180,9 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
 {
     //NSLog(@"User tapped a thumbnail view!");
     FYXMarkerInformation *markerInfo = (FYXMarkerInformation *)marker.userData;
-    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL];
+    //FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL];
+    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL captionText:markerInfo.caption];
+    
     pvc.photoPath = markerInfo.standardURL;
     [self presentViewController:pvc animated:NO completion:NULL];
     

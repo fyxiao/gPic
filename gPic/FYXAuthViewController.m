@@ -51,6 +51,9 @@
         NSLog(@"%@", instagramToken);
         FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
         appDelegate.mvc.instagramToken = instagramToken;
+        
+        [appDelegate.mvc setDefaultMapView];
+        
         [self presentViewController:appDelegate.mvc animated:YES completion:^{ }];
     }
 	return YES;

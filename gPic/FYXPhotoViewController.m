@@ -44,6 +44,26 @@
     return self;
 }
 
+- (id)initWithPhotoPath:(NSString *)path captionText:(NSString *)captionText
+{
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        //NSLog(@"In the initWithPhotoPath for FYXPhotoViewController");
+        // Custom initialization
+        NSURL *requestURL = [NSURL URLWithString:path];
+        UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
+        //UIImageView *view = [[UIImageView alloc] initWithImage:image];
+        
+        FYXPhotoView *photoView = [[FYXPhotoView alloc] initWithImage:image caption:captionText];
+        
+        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+        [photoView addGestureRecognizer:tapRecognizer];
+        
+        self.view = photoView;
+    }
+    return self;
+}
+
 - (void)tap:(UIGestureRecognizer *)gr
 {
     //NSLog(@"Recognized a tap in a FYXPhotoViewController!");

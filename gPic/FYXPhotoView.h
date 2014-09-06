@@ -10,4 +10,8 @@
 
 @interface FYXPhotoView : UIImageView
 
+@property (strong, nonatomic) UILabel *caption;
+
+- (id)initWithImage:(UIImage *)image caption:(NSString *)caption;
+
 @end

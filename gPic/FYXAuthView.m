@@ -26,4 +26,9 @@
     [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
 }
 
+- (void)dealloc
+{
+    NSLog(@"A FYXAuthView just got deallocated!");
+}
+
 @end

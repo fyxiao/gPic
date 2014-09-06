@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Frank Xiao. All rights reserved.
 //
 
+#import "FYXAppDelegate.h"
 #import "FYXPhotoView.h"
 
 @implementation FYXPhotoView
@@ -21,12 +22,53 @@
 
 - (id)initWithImage:(UIImage *)image
 {
-    NSLog(@"Initialized a FYXPhotoView!");
+    //NSLog(@"Initialized a FYXPhotoView!");
+    
+    /*
+    _menuRect = appDelegate.window.bounds;
+    _menuRect.origin.y = _menuRect.size.height * 0.9;
+    _menuRect.size.height *= 0.1;
+    */
+    
     self = [super initWithImage:image];
     self.contentMode = UIViewContentModeScaleAspectFit;
     
     self.userInteractionEnabled = YES;
     self.backgroundColor = [UIColor blackColor];
+    
+    return self;
+}
+
+- (id)initWithImage:(UIImage *)image caption:(NSString *)captionText
+{
+    //NSLog(@"Initialized a FYXPhotoView!");
+    
+    /*
+     FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+     _menuRect = appDelegate.window.bounds;
+     _menuRect.origin.y = _menuRect.size.height * 0.9;
+     _menuRect.size.height *= 0.1;
+     */
+    
+    self = [super initWithImage:image];
+    self.contentMode = UIViewContentModeScaleAspectFit;
+    
+    self.userInteractionEnabled = YES;
+    self.backgroundColor = [UIColor blackColor];
+    
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    CGRect captionFrame = appDelegate.window.bounds;
+    captionFrame.origin.y = captionFrame.size.height * 0.8;
+    captionFrame.size.height *= 0.2;
+    _caption = [[UILabel alloc] initWithFrame:captionFrame];
+    _caption.text = captionText;
+    
+    NSLog(@"Added a caption!");
+    _caption.textColor = [UIColor whiteColor];
+    _caption.adjustsFontSizeToFitWidth = YES;
+    _caption.numberOfLines = 0;
+    
+    [self addSubview:_caption];
     
     return self;
 }
