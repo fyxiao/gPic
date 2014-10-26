@@ -14,6 +14,6 @@
 
 - (id)initWithPhotoPath:(NSString *)path;
 
-- (id)initWithPhotoPath:(NSString *)path captionText:(NSString *)captionText;
+- (id)initWithPhotoPath:(NSString *)path linkURL:(NSString *)linkURL captionText:(NSString *)captionText;
 
 @end

@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "FYXAuthViewController.h"
 #import "FYXMapViewController.h"
+#import "FYXThumbnailsTableViewController.h"
 
 @interface FYXAppDelegate : UIResponder <UIApplicationDelegate>
 

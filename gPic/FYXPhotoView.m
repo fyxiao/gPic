@@ -39,7 +39,7 @@
     return self;
 }
 
-- (id)initWithImage:(UIImage *)image caption:(NSString *)captionText
+- (id)initWithImage:(UIImage *)image link:(NSString *)linkURL caption:(NSString *)captionText
 {
     //NSLog(@"Initialized a FYXPhotoView!");
     
@@ -57,6 +57,22 @@
     self.backgroundColor = [UIColor blackColor];
     
     FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    
+    // Display the link to the post above the image.
+    CGRect linkFrame = appDelegate.window.bounds;
+    linkFrame.origin.y = 0;
+    linkFrame.size.height *= 0.1;
+    _link = [[UILabel alloc] initWithFrame:linkFrame];
+    _link.text = linkURL;
+    
+    NSLog(@"Added a link!");
+    _link.textColor = [UIColor whiteColor];
+    _link.adjustsFontSizeToFitWidth = YES;
+    _link.numberOfLines = 0;
+    
+    [self addSubview:_link];
+    
+    // Display the image caption.
     CGRect captionFrame = appDelegate.window.bounds;
     captionFrame.origin.y = captionFrame.size.height * 0.8;
     captionFrame.size.height *= 0.2;

@@ -44,7 +44,7 @@
     return self;
 }
 
-- (id)initWithPhotoPath:(NSString *)path captionText:(NSString *)captionText
+- (id)initWithPhotoPath:(NSString *)path linkURL:(NSString *)linkURL captionText:(NSString *)captionText
 {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -54,7 +54,7 @@
         UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
         //UIImageView *view = [[UIImageView alloc] initWithImage:image];
         
-        FYXPhotoView *photoView = [[FYXPhotoView alloc] initWithImage:image caption:captionText];
+        FYXPhotoView *photoView = [[FYXPhotoView alloc] initWithImage:image link:linkURL caption:captionText];
         
         UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
         [photoView addGestureRecognizer:tapRecognizer];

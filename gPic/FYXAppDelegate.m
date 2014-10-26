@@ -28,6 +28,8 @@
     
     _avc = [[FYXAuthViewController alloc] init];
     
+    _mvc.ttvc = [[FYXThumbnailsTableViewController alloc] init];
+    
     self.window.rootViewController = _avc;
     return YES;
 }

@@ -17,7 +17,10 @@
 @interface FYXMapViewController ()
 
 @property (nonatomic, strong) GMSMapView *mapView;
+@property (nonatomic, strong) UITableView *thumbnailsView;
 @property (nonatomic, strong) NSMutableArray *photos;
+@property (nonatomic, strong) NSMutableArray *thumbnailPhotos;
+@property (nonatomic, strong) NSMutableArray *captions;
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic) CGRect menuRect;
 @property (nonatomic) UIButton *button;
@@ -57,8 +60,9 @@
     
     self.view = _mapView;
     
-    // Initialize photos.
+    // Initialize arrays to hold photo information.
     _photos = [[NSMutableArray alloc] init];
+    self.ttvc.thumbnailPhotos = [[NSMutableArray alloc] init];
     
     // Create a marker in the center of the map.
     GMSMarker *marker = [[GMSMarker alloc] init];
@@ -67,6 +71,7 @@
     marker.snippet = @"NJ";
     marker.map = _mapView;
     marker.tappable = YES;
+    
 }
 
 - (void)mapView:(GMSMapView *)mapView
@@ -139,6 +144,8 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
             //NSLog(@"Sending a query to %@", requestString);
             NSDictionary *responseData = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             _photos = responseData[@"data"];
+            [self.ttvc.thumbnailPhotos removeAllObjects];
+            [self.ttvc.captions removeAllObjects];
             
             for (int i = 0; i < [_photos count]; i++) {
                 NSDictionary *photoDict = _photos[i];
@@ -150,20 +157,34 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
                 marker.map = _mapView;
 
                 NSDictionary *photos = photoDict[@"images"];
-                // different photo options
+                // Different photo options.
                 NSDictionary *targetImageThumb = photos[@"thumbnail"];
                 NSDictionary *targetImageStd = photos[@"standard_resolution"];
                 
-                // get the caption
+                // Get the caption.
                 NSDictionary *caption = photoDict[@"caption"];
                 NSString *captionToDisplay = ([caption isKindOfClass:[NSNull class]]) ? @"No caption found." : caption[@"text"];
                 
                 marker.tappable = YES;
                 marker.userData = [[FYXMarkerInformation alloc] initWithLink:photoDict[@"link"] thumbnailURL:targetImageThumb[@"url"] standardURL:targetImageStd[@"url"] caption:captionToDisplay];
+                
+                // Save photos for use in the preview.
+                NSURL *requestURL = [NSURL URLWithString:targetImageThumb[@"url"]];
+                [self.ttvc.thumbnailPhotos addObject: [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]]];
+                [self.ttvc.captions addObject:captionToDisplay];
+                NSLog(@"Added a caption, count is now %lu captions!", [self.ttvc.captions count]);
             }
+            
+            // Present the controller for the thumbnails view
+            [self addChildViewController:self.ttvc];
+            [self displayContentController:self.ttvc];
+            [self.ttvc.tableView reloadData];
+            
+            [self displayThumbnails];
         }];
     }];
     [dataTask resume];
+    
 }
 
 - (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
@@ -181,10 +202,54 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     //NSLog(@"User tapped a thumbnail view!");
     FYXMarkerInformation *markerInfo = (FYXMarkerInformation *)marker.userData;
     //FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL];
-    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL captionText:markerInfo.caption];
+    FYXPhotoViewController *pvc = [[FYXPhotoViewController alloc] initWithPhotoPath:markerInfo.standardURL linkURL:markerInfo.link captionText:markerInfo.caption];
     
     pvc.photoPath = markerInfo.standardURL;
     [self presentViewController:pvc animated:NO completion:NULL];
+    
+}
+
+- (void)displayThumbnails
+{
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    CGRect thumbFrame = appDelegate.window.frame;
+    thumbFrame.origin.x += (0.75) * thumbFrame.size.width;
+    thumbFrame.size.width *= 0.25;
+    
+    [self.view addSubview:self.thumbnailsView];
+}
+
+- (void) displayContentController:(UIViewController *)content
+{
+    [self addChildViewController:content];
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    CGRect thumbFrame = appDelegate.window.frame;
+    thumbFrame.origin.x += (0.75) * thumbFrame.size.width;
+    thumbFrame.size.width *= 0.25;
+    
+    content.view.frame = thumbFrame;
+    
+    [self.view addSubview:self.ttvc.view];
+    [content didMoveToParentViewController:self];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    // Return the number of rows in the section.
+    NSLog(@"Returning %lu captions!", (unsigned long)[self.captions count]);
+    return [self.captions count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    // Configure the cell...
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"UITableViewCell"];
+    cell.textLabel.text = @"test";
+    cell.textLabel.text = [self.captions objectAtIndex:indexPath.row];
+    return cell;
+}
+
+- (void)didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
     
 }
 
