@@ -11,7 +11,7 @@
 
 #import "FYXThumbnailsTableViewController.h"
 
-@interface FYXMapViewController : UITableViewController <GMSMapViewDelegate, NSURLSessionDataDelegate>
+@interface FYXMapViewController : UITableViewController <GMSMapViewDelegate, NSURLSessionDataDelegate, FYXPreviewSelectDelegate>
 
 @property (nonatomic, strong) NSString *instagramToken;
 @property (nonatomic, strong) FYXThumbnailsTableViewController *ttvc;

@@ -20,6 +20,7 @@
 @property (nonatomic, strong) UITableView *thumbnailsView;
 @property (nonatomic, strong) NSMutableArray *photos;
 @property (nonatomic, strong) NSMutableArray *thumbnailPhotos;
+@property (nonatomic, strong) NSMutableArray *markers;
 @property (nonatomic, strong) NSMutableArray *captions;
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic) CGRect menuRect;
@@ -63,6 +64,7 @@
     // Initialize arrays to hold photo information.
     _photos = [[NSMutableArray alloc] init];
     self.ttvc.thumbnailPhotos = [[NSMutableArray alloc] init];
+    _markers = [[NSMutableArray alloc] init];
     
     // Create a marker in the center of the map.
     GMSMarker *marker = [[GMSMarker alloc] init];
@@ -83,6 +85,8 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     } else { // hide
         [_button removeFromSuperview];
     }
+    // hide the preview controller
+    [self hideContentController:self.ttvc];
 }
 
 - (void)logoutFromApp
@@ -146,6 +150,7 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
             _photos = responseData[@"data"];
             [self.ttvc.thumbnailPhotos removeAllObjects];
             [self.ttvc.captions removeAllObjects];
+            [_markers removeAllObjects];
             
             for (int i = 0; i < [_photos count]; i++) {
                 NSDictionary *photoDict = _photos[i];
@@ -166,19 +171,24 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
                 NSString *captionToDisplay = ([caption isKindOfClass:[NSNull class]]) ? @"No caption found." : caption[@"text"];
                 
                 marker.tappable = YES;
-                marker.userData = [[FYXMarkerInformation alloc] initWithLink:photoDict[@"link"] thumbnailURL:targetImageThumb[@"url"] standardURL:targetImageStd[@"url"] caption:captionToDisplay];
+                marker.userData = [[FYXMarkerInformation alloc] initWithLink:photoDict[@"link"] thumbnailURL:targetImageThumb[@"url"] standardURL:targetImageStd[@"url"] caption:captionToDisplay
+                                                                         lat:photoLatitude lon:photoLongitude];
+                
+                [_markers addObject:marker];
                 
                 // Save photos for use in the preview.
                 NSURL *requestURL = [NSURL URLWithString:targetImageThumb[@"url"]];
                 [self.ttvc.thumbnailPhotos addObject: [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]]];
                 [self.ttvc.captions addObject:captionToDisplay];
-                NSLog(@"Added a caption, count is now %lu captions!", [self.ttvc.captions count]);
             }
             
             // Present the controller for the thumbnails view
+            
+            // Set up the preview controller
             [self addChildViewController:self.ttvc];
             [self displayContentController:self.ttvc];
             [self.ttvc.tableView reloadData];
+            self.ttvc.delegate = self;
             
             [self displayThumbnails];
         }];
@@ -193,6 +203,12 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:requestURL]];
     UIImageView *view = [[UIImageView alloc] initWithImage:image];
     //NSLog(@"%@", [NSString stringWithFormat:@"Finished downloading photo from %@", requestURL]);
+    
+    // Display the preview controller
+    [self displayContentController:self.ttvc];
+    [self.ttvc.tableView reloadData];
+    self.ttvc.delegate = self;
+    
     return view;
 }
 
@@ -206,7 +222,6 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     
     pvc.photoPath = markerInfo.standardURL;
     [self presentViewController:pvc animated:NO completion:NULL];
-    
 }
 
 - (void)displayThumbnails
@@ -233,9 +248,16 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     [content didMoveToParentViewController:self];
 }
 
+- (void) hideContentController:(UIViewController *)content
+{
+    [content willMoveToParentViewController:nil];  // 1
+    [content.view removeFromSuperview];            // 2
+    [content removeFromParentViewController];      // 3
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    NSLog(@"Returning %lu captions!", (unsigned long)[self.captions count]);
+    //NSLog(@"Returning %lu captions!", (unsigned long)[self.captions count]);
     return [self.captions count];
 }
 
@@ -248,9 +270,13 @@ didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
     return cell;
 }
 
-- (void)didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+- (void)previewController:(FYXThumbnailsTableViewController *)previewController selectedRow:(NSIndexPath *)indexPath
 {
-    
+    FYXMarkerInformation *marker = ((GMSMarker *)[_markers objectAtIndex:indexPath.row]).userData;
+    GMSCameraPosition *photoPosition = [GMSCameraPosition cameraWithLatitude:marker.latitude longitude:marker.longitude zoom:17];
+    //NSLog(@"Moving camera to latitude %f and longitude %f, the caption is %@!", marker.latitude, marker.longitude, marker.caption);
+    [_mapView setCamera:photoPosition];
+    [_mapView setSelectedMarker:[_markers objectAtIndex:indexPath.row]];
 }
 
 @end

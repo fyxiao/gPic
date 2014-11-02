@@ -42,7 +42,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    NSLog(@"Returning %lu captions!", (unsigned long)[self.captions count]);
+    //NSLog(@"Returning %lu captions!", (unsigned long)[self.captions count]);
     return [self.captions count];
 }
 
@@ -55,6 +55,11 @@
     return cell;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"User selected row %ld", indexPath.row);
+    [self.delegate previewController:self selectedRow:indexPath];
+}
 
 /*
 // Override to support conditional editing of the table view.

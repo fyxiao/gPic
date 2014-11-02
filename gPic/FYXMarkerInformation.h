@@ -14,9 +14,13 @@
 @property NSString *thumbnailURL;
 @property NSString *standardURL;
 @property NSString *caption;
+@property double latitude;
+@property double longitude;
 
 - (instancetype)initWithLink:(NSString *)link
                 thumbnailURL:(NSString *)thumbnail
                  standardURL:(NSString *)standard
-                     caption:(NSString *)caption;
+                     caption:(NSString *)caption
+                         lat:(double) latitude
+                         lon:(double) longitude;
 @end

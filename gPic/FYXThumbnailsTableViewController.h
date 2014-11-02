@@ -8,9 +8,19 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol FYXPreviewSelectDelegate;
+
 @interface FYXThumbnailsTableViewController : UITableViewController
 
 @property (nonatomic, strong) NSMutableArray *thumbnailPhotos;
 @property (nonatomic, strong) NSMutableArray *captions;
+@property (nonatomic, weak) id<FYXPreviewSelectDelegate> delegate;
+
+@end
+
+// Protocol so the FYXMapViewController knows the user selected a thumbnail
+@protocol FYXPreviewSelectDelegate <NSObject>
+
+- (void)previewController:(FYXThumbnailsTableViewController *)previewController selectedRow:(NSIndexPath *)indexPath;
 
 @end
