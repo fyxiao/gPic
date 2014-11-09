@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Frank Xiao. All rights reserved.
 //
 
-#import "Constants.h"
+#import "FYXConstants.h"
 #import "FYXAppDelegate.h"
 #import "FYXAuthViewController.h"
 
@@ -20,7 +20,6 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
         FYXAuthView *authView = [[FYXAuthView alloc] init];
         authView.delegate = self;
         self.view = authView;
@@ -48,12 +47,9 @@
     NSRange tokenLoc = [urlString rangeOfString:INSTAGRAM_TOKEN];
     if (tokenLoc.location != NSNotFound) {
         NSString *instagramToken = [urlString substringFromIndex:(tokenLoc.location + tokenLoc.length + 1)];
-        NSLog(@"%@", instagramToken);
         FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
         appDelegate.mvc.instagramToken = instagramToken;
-        
         [appDelegate.mvc setDefaultMapView];
-        
         [self presentViewController:appDelegate.mvc animated:YES completion:^{ }];
     }
 	return YES;

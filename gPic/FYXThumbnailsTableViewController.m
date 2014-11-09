@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Frank Xiao. All rights reserved.
 //
 
+#import "FYXAppDelegate.h"
 #import "FYXThumbnailsTableViewController.h"
 
 @interface FYXThumbnailsTableViewController ()
@@ -50,15 +51,24 @@
     
     // Configure the cell...
     UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"UITableViewCell"];
-    cell.textLabel.text = @"test";
-    cell.textLabel.text = [self.captions objectAtIndex:indexPath.row];
+    cell.backgroundView = [[UIImageView alloc] initWithImage:[_thumbnailPhotos objectAtIndex:indexPath.row]];
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"User selected row %ld", indexPath.row);
     [self.delegate previewController:self selectedRow:indexPath];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    FYXAppDelegate *appDelegate = (FYXAppDelegate *)[[UIApplication sharedApplication] delegate];
+    CGRect thumbFrame = appDelegate.window.frame;
+    
+    UIImage *photo = [_thumbnailPhotos objectAtIndex:indexPath.row];
+    double photoRatio = photo.size.height/photo.size.width;
+
+    return photoRatio * 0.15 * thumbFrame.size.width;
 }
 
 /*

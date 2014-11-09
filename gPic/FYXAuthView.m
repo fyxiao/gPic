@@ -7,7 +7,7 @@
 //
 
 #import "FYXAuthView.h"
-#import "Constants.h"
+#import "FYXConstants.h"
 
 @implementation FYXAuthView
 
@@ -24,11 +24,6 @@
 {
     NSString *url = [NSString stringWithFormat:INSTAGRAM_AUTH_BASE_URI, INSTAGRAM_CLIENT_ID, INSTAGRAM_SCOPE, INSTAGRAM_REDIRECT_URI];
     [self loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
-}
-
-- (void)dealloc
-{
-    NSLog(@"A FYXAuthView just got deallocated!");
 }
 
 @end

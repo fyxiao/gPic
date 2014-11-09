@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Frank Xiao. All rights reserved.
 //
 
-#import "Constants.h"
+#import "FYXConstants.h"
 #import "FYXAppDelegate.h"
 #import "FYXAuthViewController.h"
 #import "FYXMapViewController.h"
@@ -17,20 +17,17 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    
     // Override point for customization after application launch.
-    self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
-    // Authorize this app to use Google Maps.
+    // Authorize this app to use Google Maps and set up the various view controllers.
     [GMSServices provideAPIKey:GMS_API_KEY];
-    
     _mvc = [[FYXMapViewController alloc] init];
-    
     _avc = [[FYXAuthViewController alloc] init];
-    
     _mvc.ttvc = [[FYXThumbnailsTableViewController alloc] init];
-    
     self.window.rootViewController = _avc;
+    
     return YES;
 }
 

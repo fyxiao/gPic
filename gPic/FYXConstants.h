@@ -1,5 +1,5 @@
 //
-//  Constants.h
+//  FYXConstants.h
 //  gPic
 //
 //  Created by Frank Xiao on 7/27/14.
@@ -9,6 +9,7 @@
 #ifndef gPic_Constants_h
 #define gPic_Constants_h
 
+// Google Maps API Key
 static NSString *const GMS_API_KEY = @"<GMS_API_KEY_HERE>";
 
 // All Instagram related constants.
@@ -18,5 +19,8 @@ static NSString *const INSTAGRAM_AUTH_BASE_URI = @"https://instagram.com/oauth/a
 static NSString *const INSTAGRAM_SCOPE = @"comments+relationships+likes";
 static NSString *const INSTAGRAM_TOKEN = @"access_token";
 static NSString *const INSTAGRAM_REDIRECT_URI = @"http://www.instagram.com";
+
+// Thumbnail view width
+static double const THUMBNAILS_VIEW_PROPORTION = 0.15;
 
 #endif
