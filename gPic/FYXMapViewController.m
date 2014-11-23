@@ -46,8 +46,8 @@
 
 - (void)setDefaultMapView
 {
-    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:40.3487
-                                                            longitude:-74.6591
+    GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:37.33182
+                                                            longitude:-122.03118
                                                                  zoom:17];
     _mapView = [GMSMapView mapWithFrame:CGRectZero camera:camera];
     _mapView.myLocationEnabled = YES;
@@ -65,13 +65,15 @@
     self.ttvc.thumbnailPhotos = [[NSMutableArray alloc] init];
     _markers = [[NSMutableArray alloc] init];
     
+    /*
     // Create a marker in the center of the map.
     GMSMarker *marker = [[GMSMarker alloc] init];
-    marker.position = CLLocationCoordinate2DMake(40.3487, -74.6591);
+    marker.position = CLLocationCoordinate2DMake(37.33182, -122.03118);
     marker.title = @"Princeton";
     marker.snippet = @"NJ";
     marker.map = _mapView;
     marker.tappable = YES;
+     */
 }
 
 - (void)mapView:(GMSMapView *)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
